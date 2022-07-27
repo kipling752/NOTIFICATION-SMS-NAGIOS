@@ -1,0 +1,65 @@
+***************SMS ALERT AND TEST SMS API ***************
+
+wget "https://my.fastsms.co.uk/api?Token=ufUDlZjOOJVy0iSYvTed3r7K&Action=Send&DestinationAddress=+221760222817&SourceAddress=SEKANLIN&Body=Bonjour Principe (kipling) ceci est un test venant de votre Serveur Nagios"
+
+
+***********Ajouter les lignes a la fin du fichier commands.cfg
+vim /usr/local/nagios/etc/objects/commands.cfg
+
+
+################################################################################
+#
+# SAMPLE NOTIFICATION COMMANDS SMS
+#
+# These are some example notification commands.  They may or may not work on
+# your system without modification.  As an example, some systems will require
+#
+################################################################################
+
+# 'notify-service-by-sms command definition
+
+define command{
+        command_name    notify-service-to-kipling
+        command_line    /usr/bin/printf "%b" "***** Nagios *****\n\nNotification Type: $NOTIFICATIONTYPE$\n\nService: $SERVICEDESC$\nHost: $HOSTALIAS$\nAddress: $HOSTADDRESS$\nState: $SERVICESTATE$\n\nDate/Time: $LONGDATETIME$\n\nAdditional Info:\n\n$SERVICEOUTPUT$\n" | wget "https://my.fastsms.co.uk/api?Token=ufUDlZjOOJVy0iSYvTed3r7K&Action=Send&DestinationAddress=+221777655070&SourceAddress=Principe&Body=** Type : $NOTIFICATIONTYPE$ Host Alert: $SERVICEDESC$ is $SERVICESTATE$ at: $LONGDATETIME$ **"
+}
+
+
+
+#AJOUT CONTACT ET GROUPE
+vim /usr/local/nagios/etc/objects/contacts.cfg
+
+define contact {
+    contact_name            sms_kipling
+    use                     generic-contact
+    alias                  sms_kipling
+    #host_notification_commands notify-host-to-kipling
+    service_notification_commands notify-service-to-kipling
+}
+
+define contactgroup{
+        contactgroup_name       sms_admins
+        alias                   	smsAdministrators
+        members                 sms_kipling
+}
+
+
+define service {
+
+    use                     generic-service           ; Name of service template to use
+    host_name               kipling-PC
+    service_description     PING
+    check_command           check_ping!100.0,20%!500.0,60%
+    contact_groups          sms_admins
+}
+
+
+
+
+
+
+
+
+
+
+
+ 
